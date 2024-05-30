@@ -5,6 +5,10 @@ Tests this dotfiles repo in a docker environment.
 Requirements:
     docker
 "
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+	# Running as a script
+	set -eo pipefail
+fi
 
 outside_docker(){
     __doc__="
@@ -26,9 +30,10 @@ outside_docker(){
     docker run \
         --volume "$TEST_DPATH:/tests" \
         --volume "$REPO_DPATH:/repo" \
-        -it ubuntu:20.04 bash
+        -it ubuntu:20.04 \
+        /tests/test_in_docker.sh
+        #bash
     # TODO: autorun. Give option to interact if needed
-    #/tests/test_in_docker.sh
 }
 
 inside_docker(){
@@ -40,25 +45,37 @@ inside_docker(){
     REPO_URI=/repo/.git
     echo "REPO_URI = $REPO_URI"
 
-    apt update -y
-    apt install git -y
-    cd ~
-	git config --global --add safe.directory $REPO_URI
-    git config --global --add safe.directory '*'
-
-    git clone $REPO_URI dotfiles
-    cd dotfiles
-    bash ~/dotfiles/init.sh
-
     export HOME=/root
     mkdir "$HOME"
     rm -rf "$HOME/dotfiles"
 
-    REPO_URI=https://github.com/Erotemic/dotfiles.git
-    REPO_URI=/repo/.git
-    sudo apt install git -y
-    git clone "$REPO_URI" "$HOME/dotfiles"
-    cd "$HOME"/dotfiles
-    ./initialize
+    apt update -y
+    apt install git -y
+    git config --global --add safe.directory '*'
 
+    git clone $REPO_URI "$HOME"/dotfiles
+    cd "$HOME"/dotfiles
+    source "$HOME"/dotfiles/install.sh
+
+    #REPO_URI=https://github.com/Erotemic/dotfiles.git
+    #REPO_URI=/repo/.git
+    #sudo apt install git -y
+    #git clone "$REPO_URI" "$HOME/dotfiles"
+    #cd "$HOME"/dotfiles
+    #./initialize
 }
+
+
+# bpkg convention
+# https://github.com/bpkg/bpkg
+if [[ ${BASH_SOURCE[0]} != "$0" ]]; then
+    # We are sourcing the library
+    echo "Sourcing prepare_system as a library and environment"
+else
+
+    if [[ "$1" == "inside" ]]; then
+        inside_docker
+    else
+        outside_docker
+    fi
+fi
