@@ -36,16 +36,8 @@ Example Usage:
     # versions of CPython
     #source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
 
-    #pyenv_create_virtualenv 3.8.13 most
     pyenv_create_virtualenv 3.11.2 most
-    #pyenv_create_virtualenv pypy3.7-7.3.9 most
-    #
-    pyenv_create_virtualenv 3.11.9 off
     pyenv_create_virtualenv 3.12.3 off
-
-
-    source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
-    build_vim_for_pyenv
 "
 
 
@@ -149,13 +141,10 @@ install_pyenv(){
         pyenv global mambaforge-22.9.0-3
     '
     # Install requirements for building Python
-    #sudo apt-get install -y \
     apt_ensure \
         make build-essential libssl-dev zlib1g-dev \
         libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev \
         libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev libgdbm-dev libc6-dev
-
-    #apt_ensure python-openssl python3-openssl  # Is this needed?
 
     # Download pyenv
     export PYENV_ROOT="$HOME/.pyenv"
@@ -188,51 +177,9 @@ pyenv_create_virtualenv(){
         source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
         pyenv_create_virtualenv 3.9.9 full
 
-        PYTHON_VERSION=3.8.5
-        CHOSEN_PYTHON_VERSION=3.8.5
-
-        PYTHON_VERSION=3.9.9
-        CHOSEN_PYTHON_VERSION=3.9.9
-
-        source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
-        pyenv_create_virtualenv 3.8.5 full
-
-        source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
-        pyenv_create_virtualenv 3.8.6 most
-
-        source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
-        pyenv_create_virtualenv 3.7.10 off
-
-        source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
-        pyenv_create_virtualenv 2.7.18
-
-        source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
-        pyenv_create_virtualenv 2.7.17 off
-
-        source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
-        PYTHON_VERSION=3.4.10
-        pyenv_create_virtualenv 3.4.10 off
-
-        source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
-        pyenv_create_virtualenv 3.5.10 off
-
-        source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
-        pyenv_create_virtualenv 3.6.15 off
-
-        source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
-        pyenv_create_virtualenv 3.9.9 full
-
-        source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
-        pyenv_create_virtualenv 3.10.0 full
-
-        source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
-        pyenv_create_virtualenv 3.10.10 full
-
         source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
         pyenv_create_virtualenv 3.10.5 full
 
-        source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
-        pyenv_create_virtualenv 3.11.0rc2 none
     "
     local PYTHON_VERSION=$1
     local OPTIMIZE_PRESET=${2:-"most"}
@@ -246,14 +193,6 @@ pyenv_create_virtualenv(){
         return 1
     fi
     CHOSEN_PYTHON_VERSION=$BEST_MATCH
-
-    #PYTHON_CFLAGS="
-    #    -march=x86-64
-    #    -march=rocketlake
-    #    -march=native
-    #    -O2
-    #    -O3
-    #"
 
     # About Optimizations
     # https://github.com/docker-library/python/issues/160#issuecomment-509426916
@@ -448,15 +387,6 @@ remove_cpath_entry()
 }
 
 
-debug_paths(){
-    # Print contents of path variables for debugging
-    _PYEXE=$(system_python)
-    $_PYEXE -c "import os; path = os.environ['LD_LIBRARY_PATH'].split(os.pathsep); print('\n'.join(path))"
-    $_PYEXE -c "import os; path = os.environ['PATH'].split(os.pathsep); print('\n'.join(path))"
-    $_PYEXE -c "import os; path = os.environ['LD_LIBRARY_PATH'].split(os.pathsep); print(os.pathsep.join(path))"
-}
-
-
 deactivate_venv()
 {
     # https://stackoverflow.com/questions/85880/determine-if-a-function-exists-in-bash
@@ -467,11 +397,6 @@ deactivate_venv()
     OLD_VENV=$VIRTUAL_ENV
     echo "deactivate_venv OLD_VENV=$OLD_VENV"
     if [ "$OLD_VENV" != "" ]; then
-        #if [ -n "$(type -t rvm)" ] && [ "$(type -t rvm)" = function ]; then
-        #    echo rvm is a function;
-        #else
-        #    echo rvm is NOT a function;
-        #fi
         if [ -n "$(type -t deactivate)" ] && [ "$(type -t deactivate)" = function ]; then
             # deactivate bash function exists
             deactivate
@@ -482,11 +407,6 @@ deactivate_venv()
             remove_cpath_entry "$OLD_VENV/include"
         fi
     fi
-    # Hack for personal symlinks.  I'm not sure why these are populated
-    #remove_ld_library_path_entry ~/venv3/local/lib
-    #remove_ld_library_path_entry ~/venv3/lib
-    #remove_path_entry ~/venv3/bin
-    #remove_cpath_entry ~/venv3/include
 }
 
 workon_py()
@@ -501,7 +421,6 @@ workon_py()
         # Check if it is the name of a conda or virtual env
         # First try conda, then virtualenv
         local TEMP_PATH=$_CONDA_ROOT/envs/$NEW_VENV
-        #echo "TEMP_PATH = $TEMP_PATH"
         if [ -d "$TEMP_PATH" ]; then
             NEW_VENV=$TEMP_PATH
         else
@@ -511,12 +430,8 @@ workon_py()
             fi
         fi
     fi
-    #echo "WEVN2: NEW_VENV = $NEW_VENV"
-    #echo "TRY NEW VENV"
 
     # Try to find the environment the user requested
-    #VENV_NAME_CAND1=pyenv$NEW_VENV
-    #PYENV_ACTIVATE_CAND1=$(pyenv root)/versions/$NEW_VENV/envs/$VENV_NAME_CAND1/bin/activate
     PYENV_ACTIVATE_CAND1=$(echo "$(pyenv root)"/versions/*/envs/"$NEW_VENV"/bin/activate)
 
     if [ -f "$PYENV_ACTIVATE_CAND1" ]; then
@@ -524,14 +439,12 @@ workon_py()
         # shellcheck disable=SC1090
         source "$PYENV_ACTIVATE_CAND1"
     elif [ -d "$NEW_VENV/conda-meta" ]; then
-        #echo "NEW CONDA VENV"
         deactivate_venv
         # Use a conda environment
         conda activate "$NEW_VENV"
         export LD_LIBRARY_PATH=$NEW_VENV/lib:$LD_LIBRARY_PATH
         export CPATH=$NEW_VENV/include:$CPATH
     elif [ -d "$NEW_VENV" ]; then
-        #echo "NEW VENV"
         # Ensure the old env is deactivated
         deactivate_venv
         # Use a virtualenv environment
@@ -541,12 +454,6 @@ workon_py()
         # shellcheck disable=SC1091
         source "$NEW_VENV/bin/activate"
     fi
-    # echo "new venv doesn't exist"
-}
-
-we(){
-    # Alias for workon_py
-    workon_py "$@"
 }
 
 
@@ -569,7 +476,6 @@ refresh_workon_autocomplete(){
     # Remove newlines
     KNOWN_ENVS=$(echo "$KNOWN_CONDA_ENVS $KNOWN_VIRTUAL_ENVS $KNOWN_PYENV_ENVS" | tr '\n' ' ')
     complete -W "$KNOWN_ENVS" "workon_py"
-    complete -W "$KNOWN_ENVS" "we"
 }
 
 execute_pyenv_ext_complete_script(){
@@ -605,7 +511,6 @@ rebuild_python(){
 
 
 new_pyenv_venv(){
-    # shellcheck disable=SC2016
     __doc__='
     Create a new pyenv virtual environment
 
@@ -628,10 +533,8 @@ new_pyenv_venv(){
 }
 
 update_pyenv(){
-    # shellcheck disable=SC2016
     __doc__='
     export PATH="$PYENV_ROOT/bin:$PATH"
-    eval "$($PYENV_ROOT/bin/pyenv init -)"
     eval "$($PYENV_ROOT/bin/pyenv init -)"
     '
     # Download pyenv
@@ -642,108 +545,6 @@ update_pyenv(){
 
 _strip_double_whitespace(){
     echo "$@" | sed -zE 's/[ \n]+/ /g'
-}
-
-
-build_vim_for_pyenv(){
-    __doc__="
-    Helper to install vim/gvim compiled against a specific python virtual environment
-
-    source ~/local/tools/pyenv_ext/pyenv_ext_commands.sh
-    build_vim_for_pyenv
-    "
-
-    if [[ ! -d "$HOME/code/vim" ]]; then
-        git clone https://github.com/vim/vim.git ~/code/vim
-    else
-        (cd "$HOME/code/vim" && git fetch)
-    fi
-
-    # shellcheck disable=SC1091
-    source "$HOME/local/init/utils.sh"
-    apt_ensure build-essential libtinfo-dev libncurses-dev gnome-devel libgtk-3-dev libxt-dev
-
-    #./configure --help
-    #./configure --help | grep python
-    # shellcheck disable=SC2164
-    cd "$HOME/code/vim"
-
-    # https://github.com/vim/vim/issues/6457
-    #git checkout v8.1.2424
-    #git checkout v8.2.4030
-    git checkout v9.0.0824
-
-    # Build for the global pyenv python outside of venv
-    CHOSEN_PYTHON_VERSION=$(python -V | cut -d' ' -f2)
-    echo "CHOSEN_PYTHON_VERSION = $CHOSEN_PYTHON_VERSION"
-    pyenv shell "$CHOSEN_PYTHON_VERSION"
-    pyenv global "$CHOSEN_PYTHON_VERSION"
-
-    # Build in virtualenv?
-    # deactivate
-    deactivate_venv
-
-    BUILD_IN_VIRTUALENV=0
-    if [[ "$BUILD_IN_VIRTUALENV" == "1" ]]; then
-        #PREFIX=$VIRTUAL_ENV
-        # I Think the config has to point to the actual python install and not
-        # the virtualenv
-        PREFIX=$(pyenv prefix)
-        EXEC_PREFIX=$VIRTUAL_ENV
-        CONFIG_DIR=$("$(pyenv prefix)"/bin/python-config --configdir)
-        #CONFIG_DIR=$($VIRTUAL_ENV/bin/python-config --configdir)
-        PYTHON_CMD=$(which python)
-    else
-        # Seems like this doesnt always work
-        PREFIX=$(pyenv prefix)
-        EXEC_PREFIX="$PREFIX"
-        CONFIG_DIR=$("$(pyenv prefix)"/bin/python-config --configdir)
-        PYTHON_CMD=$(pyenv which python)
-    fi
-
-    #PREFIX=${VIRTUAL_ENV:=$HOME/.local}
-    #CONFIG_DIR=$(python-config --configdir)
-
-    #https://github.com/ycm-core/YouCompleteMe/issues/3760
-    #PREFIX=$(pyenv prefix)
-    #CONFIG_DIR=$($(pyenv prefix)/bin/python-config --configdir)
-    echo "
-        PREFIX='$PREFIX'
-        EXEC_PREFIX='$EXEC_PREFIX'
-        CONFIG_DIR='$CONFIG_DIR'
-    "
-
-    # THIS WORKS!
-    export LDFLAGS="-rdynamic"
-    make distclean
-    ./configure \
-        "--prefix=$PREFIX" \
-        "--exec-prefix=$EXEC_PREFIX" \
-        --enable-pythoninterp=no \
-        --enable-python3interp=yes \
-        "--with-python3-command=$PYTHON_CMD" \
-        "--with-python3-config-dir=$CONFIG_DIR" \
-        --enable-gui=gtk3
-    cat src/auto/config.mk
-
-    # Ensure the version of python matches (there are cases due to system
-    # configs where it might not)
-    # shellcheck disable=SC2002
-    cat src/auto/config.mk | grep 'PYTHON3\|prefix'
-
-    make -j"$(nproc)"
-    #./src/vim -u NONE --cmd "source test.vim"
-    make install
-
-    # BROKEN
-    pip install ubelt pyperclip shellcheck-py six xinspect psutil pyflakes packaging
-    #if [[ -d "$HOME/code/vimtk" ]]; then
-    #    unlink_or_backup "$HOME/.vim/bundle/vimtk"
-    #    ln -s "$HOME/code/vimtk" "$HOME/.vim/bundle/vimtk"
-    #    pip install -r "$HOME/.vim/bundle/vimtk/requirements/runtime.txt"
-    #else
-    #    pip install ubelt pyperclip shellcheck-py six xinspect psutil pyflakes
-    #fi
 }
 
 
@@ -785,11 +586,8 @@ install_conda(){
     #https://repo.anaconda.com/miniconda/Miniconda3-py311_23.5.2-0-Windows-x86_64.exe
     #https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 
-    #CONDA_VERSION=4.10.3
-    #CONDA_PY_VERSION=py38
     CONDA_VERSION=23.10.0-1
     CONDA_PY_VERSION=py311
-    #ARCH="$(dpkg --print-architecture)"  # different convention
     ARCH="$(arch)"  # e.g. x86_64
     OS=Linux
     CONDA_KEY="Miniconda3-${CONDA_PY_VERSION}_${CONDA_VERSION}-${OS}-${ARCH}"
